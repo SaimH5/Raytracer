@@ -3,16 +3,24 @@
 #include <vector>
 #include <string>
 
+#include "src/vec3.h"
 
+std::string write_color(color col)
+{
+    return std::to_string(static_cast<int>(255 * col[0])) + " " +
+           std::to_string(static_cast<int>(255 * col[1])) + " " +
+           std::to_string(static_cast<int>(255 * col[2])) + "\n";
+}
 
 void render_lines(std::vector<std::string>& pixelColors, int starting_scanline, int ending_scanline, int scanline_width)
 {
+    color bg_color(1, 0.5, 0);
     for(int row = starting_scanline; row >= ending_scanline; row--)
     {
         std::cerr << "Scanlines remaining: " << row << " \r" << std::flush;
         for(int col = 0; col < scanline_width; col++)
         {
-            pixelColors.push_back("255 0 0\n");
+            pixelColors.push_back(write_color(bg_color));
         }
     }
 }
