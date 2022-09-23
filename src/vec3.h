@@ -8,12 +8,23 @@
 class vec3
 {
 public:
+    // Constructors
     vec3(double x, double y, double z) 
     {
         e[0] = x;
         e[1] = y;
         e[2] = z;
     }
+
+    vec3(const vec3& other)=default;
+    vec3& operator=(const vec3& other)=default;
+
+    vec3(const vec3&& other) : e(std::move(other.e)) {}
+
+    // Access individual elements
+    inline double x() const { return e[0]; }
+    inline double y() const { return e[1]; }
+    inline double z() const { return e[2]; }
 
     // Indexing operators
     inline double operator[](int idx) const { return e[idx]; }
@@ -79,6 +90,7 @@ public:
         return std::sqrt(e[0] * e[0] + e[1] * e[1] + e[2] * e[2]);
     }
 
+private:
     std::array<double, 3> e;
 };
 
