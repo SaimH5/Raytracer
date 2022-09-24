@@ -6,35 +6,26 @@
 #include "src/vec3.h"
 #include "src/ray.h"
 #include "src/sphere.h"
+#include "src/camera.h"
 
 struct render_info
 {
     const int img_width;
     const int img_height;
-    point3 origin;
-    point3 lower_left_corner;
-    vec3 horizontal;
-    vec3 vertical;
+    camera cam;
 
     render_info(const int width, 
                 const int height,
-                point3 org,
-                point3 llc,
-                vec3 horz,
-                vec3 vert ) 
+                camera camera ) 
                 : 
                 img_width(width), 
                 img_height(height), 
-                origin(org), 
-                lower_left_corner(llc), 
-                horizontal(horz), 
-                vertical(vert) {}
+                cam(camera) {}
 };
 
 color ray_color(const ray& r, hittable& h)
 {
     if(h.hit(r)) return h.hit_color();
-
     auto unit_direction = unit_vector(r.direction());
     auto t = 0.5 * (unit_direction.y() + 1);
     return (1-t) * color(1, 1, 1) + t * color(0.5, 0.7, 1);
@@ -58,7 +49,7 @@ void render_lines(std::vector<std::string>& pixelColors, int starting_scanline, 
         {
             auto u = static_cast<double>(col) / (inf.img_width - 1);
             auto v = static_cast<double>(row) / (inf.img_height - 1);
-            ray r(inf.origin, inf.lower_left_corner + u * inf.horizontal + v * inf.vertical - inf.origin);
+            ray r = inf.cam.get_ray(u, v);
             color px_col = ray_color(r, h);
             pixelColors[(row * inf.img_width) + col] = write_color(px_col);
         }
@@ -76,14 +67,11 @@ int main()
     std::vector<std::string> pixelColors(image_width * image_height);
 
     // Camera setup
-    auto viewport_height = 2.0;
-    auto viewport_width = aspect_ratio * viewport_height;
-    double focal_length = 1.0;
     point3 origin(0, 0, 0);
-    vec3 horizontal(viewport_width, 0, 0);
-    vec3 vertical(0, viewport_height, 0);
-    vec3 lower_left_corner = origin - horizontal/2.0 - vertical / 2.0 - vec3(0, 0, focal_length);
-    render_info inf(image_width, image_height, origin, lower_left_corner, horizontal, vertical);
+    camera cam(aspect_ratio, origin);
+    cam.get_ray(0, 0);
+    
+    render_info inf(image_width, image_height, cam);
 
     // Scene setup
     sphere s(point3(0, 0, -1), 0.5, color(1, 0, 0));
