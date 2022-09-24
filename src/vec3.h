@@ -31,6 +31,8 @@ public:
     inline double& operator[](int idx) { return e[idx]; }
 
     // Arithmetic operators
+    vec3 operator-() { return vec3(-e[0], -e[1], -e[2]); }
+
     inline vec3& operator+=(const vec3& other)
     {
         e[0] += other[0];
