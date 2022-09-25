@@ -1,3 +1,4 @@
+#include <chrono>
 #include <iostream>
 #include <fstream>
 #include <vector>
@@ -9,20 +10,30 @@
 #include "src/sphere.h"
 #include "src/camera.h"
 #include "src/hittable_list.h"
+#include "src/thread_pool.h"
+#include "src/utilities.h"
+
+using namespace std::chrono;
 
 struct render_info
 {
     const int img_width;
     const int img_height;
+    const int samples_per_pixel;
+    int scanline_count;
     camera cam;
 
     render_info(const int width, 
                 const int height,
-                camera camera ) 
+                const int sampling_rate,
+                int scanlines,
+                camera camera)
                 : 
                 img_width(width), 
                 img_height(height), 
-                cam(camera) {}
+                cam(camera),
+                scanline_count(scanlines),
+                samples_per_pixel(sampling_rate) {}
 };
 
 color ray_color(const ray& r, hittable_list& h)
@@ -55,25 +66,34 @@ void render_lines(std::vector<std::string>& pixelColors, int starting_scanline, 
 {
     for(int row = starting_scanline; row >= ending_scanline; row--)
     {
-        std::cerr << "Scanlines remaining: " << row << " \r" << std::flush;
+        std::string log = "\nScanlines remaining: " + std::to_string(inf.scanline_count);
+        std::cerr << log;
         for(int col = 0; col < inf.img_width; col++)
         {
-            auto u = static_cast<double>(col) / (inf.img_width - 1);
-            auto v = static_cast<double>(row) / (inf.img_height - 1);
-            ray r = inf.cam.get_ray(u, v);
-            color px_col = ray_color(r, h);
+            color px_col;
+            for(int i = 0; i < inf.samples_per_pixel; i++)
+            {
+                auto u = static_cast<double>(col + random_double()) / (inf.img_width - 1);
+                auto v = static_cast<double>(row + random_double()) / (inf.img_height - 1);
+                ray r = inf.cam.get_ray(u, v);
+                px_col += ray_color(r, h);
+            }
+            px_col /= inf.samples_per_pixel;
             pixelColors[((inf.img_height - 1 - row) * inf.img_width) + col] = write_color(px_col);
         }
+        inf.scanline_count--;
     }
 }
 
 int main()
 {
+    thread_pool pool;
     std::ofstream outputImage("output.ppm", std::ios::trunc);
     // Image dimensions
     const int aspect_ratio = 2.0;
-    const int image_width = 1000;
+    const int image_width = 800;
     const int image_height = image_width / aspect_ratio;
+    const int samples_per_pixel = 20;
 
     std::vector<std::string> pixelColors(image_width * image_height);
 
@@ -82,7 +102,8 @@ int main()
     camera cam(aspect_ratio, origin);
     cam.get_ray(0, 0);
 
-    render_info inf(image_width, image_height, cam);
+    int scanline_count = image_height;
+    render_info inf(image_width, image_height, samples_per_pixel, scanline_count, cam);
 
     // Scene setup
     hittable_list scene;
@@ -94,14 +115,36 @@ int main()
     outputImage << "P3\n" << image_width << " " << image_height << "\n255\n";
 
     // Render loop
-    int loop_count = 4;
-    int scanlines_per_loop = image_height / loop_count;
-    for(int i = 0; i < loop_count; i++)
-    {
-        render_lines(pixelColors, (image_height - 1) - i * scanlines_per_loop, (image_height) - (i + 1) * scanlines_per_loop, inf, scene);
-    }
-    std::cerr << "\nDone!";
+    int loop_count = 3;
+    int scanlines_per_loop = image_height / (loop_count + 1);
+    std::vector<std::future<void>> futures;
 
+    auto t1 = high_resolution_clock::now();
+    for(int i = 0; i < loop_count + 1; i++)
+    {
+        // Multithreaded_version
+        if(i == loop_count)
+        {
+            render_lines(pixelColors, (image_height - 1) - i * scanlines_per_loop, (image_height) - (i + 1) * scanlines_per_loop, inf, scene);
+        }
+        else
+        {
+            futures.push_back(pool.submit(render_lines, std::ref(pixelColors), (image_height - 1) - i * scanlines_per_loop, (image_height) - (i + 1) * scanlines_per_loop, std::ref(inf), std::ref(scene)));
+        }
+
+        // Single threaded version
+        // render_lines(pixelColors, (image_height - 1) - i * scanlines_per_loop, (image_height) - (i + 1) * scanlines_per_loop, inf, scene);
+    }
+    // std::cerr << "\nHere\n";
+
+    for(const auto& ft : futures)
+    {
+        ft.wait();
+    }
+    auto t2 = high_resolution_clock::now();
+    std::cerr << "\nTime taken: " << duration_cast<milliseconds>(t2-t1).count();
+    std::cerr << "\nDone!";
+    std::cerr << "\nWriting to file.";
     std::string outputImageString;
     for(auto& px_color : pixelColors)
     {

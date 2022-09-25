@@ -10,7 +10,7 @@ public:
 
     point3 origin() const { return m_origin; }
     vec3 direction() const { return m_direction; }
-    vec3 at(const double param) { return m_origin + param * m_direction; }
+    vec3 at(const double param) const { return m_origin + param * m_direction; }
 
 private:
     point3 m_origin;

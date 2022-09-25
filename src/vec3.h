@@ -9,31 +9,29 @@ class vec3
 {
 public:
     // Constructors
-    vec3(double x, double y, double z) 
-    {
-        e[0] = x;
-        e[1] = y;
-        e[2] = z;
-    }
+    vec3() : e{0, 0, 0} {}
+    vec3(double x, double y, double z) : e{x, y, z} {}
 
+    // vec3(const vec3 other)=default;
+    vec3(vec3& other)=default;
     vec3(const vec3& other)=default;
     vec3& operator=(const vec3& other)=default;
 
-    vec3(const vec3&& other) : e(std::move(other.e)) {}
+    // vec3(const vec3&& other) : e(std::move(other.e)) {}
 
     // Access individual elements
-    inline double x() const { return e[0]; }
-    inline double y() const { return e[1]; }
-    inline double z() const { return e[2]; }
+    double x() const { return e[0]; }
+    double y() const { return e[1]; }
+    double z() const { return e[2]; }
 
     // Indexing operators
-    inline double operator[](int idx) const { return e[idx]; }
-    inline double& operator[](int idx) { return e[idx]; }
+    double operator[](int idx) const { return e[idx]; }
+    double& operator[](int idx) { return e[idx]; }
 
     // Arithmetic operators
-    vec3 operator-() { return vec3(-e[0], -e[1], -e[2]); }
+    vec3 operator-() const { return vec3(-e[0], -e[1], -e[2]); }
 
-    inline vec3& operator+=(const vec3& other)
+    vec3& operator+=(const vec3& other)
     {
         e[0] += other[0];
         e[1] += other[1];
@@ -41,7 +39,7 @@ public:
         return *this;
     }
 
-    inline vec3& operator-=(const vec3& other)
+    vec3& operator-=(const vec3& other)
     {
         e[0] -= other[0];
         e[1] -= other[1];
@@ -49,7 +47,7 @@ public:
         return *this;
     }
 
-    inline vec3& operator*=(const vec3& other)
+    vec3& operator*=(const vec3& other)
     {
         e[0] *= other[0];
         e[1] *= other[1];
@@ -57,7 +55,7 @@ public:
         return *this;
     }
 
-    inline vec3& operator*=(const double k)
+    vec3& operator*=(const double k)
     {
         e[0] *= k;
         e[1] *= k;
@@ -65,7 +63,7 @@ public:
         return *this;
     }
 
-    inline vec3& operator/=(const vec3& other)
+    vec3& operator/=(const vec3& other)
     {
         e[0] /= other[0];
         e[1] /= other[1];
@@ -73,7 +71,7 @@ public:
         return *this;
     }
 
-    inline vec3& operator/=(const double k)
+    vec3& operator/=(const double k)
     {
         e[0] /= k;
         e[1] /= k;
@@ -82,7 +80,7 @@ public:
     }
 
 
-    inline double length_squared() const
+    double length_squared() const
     {
         return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
     }
@@ -94,7 +92,10 @@ public:
 
 private:
     std::array<double, 3> e;
+    // double e[3];
 };
+
+
 
 // Using's
 
