@@ -6,6 +6,7 @@
 class ray
 {
 public:
+    ray()=default;
     ray(point3 org, vec3 dir) : m_origin(org), m_direction(dir) {}
 
     point3 origin() const { return m_origin; }

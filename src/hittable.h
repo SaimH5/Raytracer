@@ -1,6 +1,7 @@
 #ifndef _HITTABLE_h
 #define _HITTABLE_h
 
+#include <memory>
 #include "ray.h"
 #include "vec3.h"
 
@@ -10,6 +11,7 @@ struct hit_record
     point3 p;
     vec3 normal;
     bool front_face;
+    std::shared_ptr<class material> mat_ptr;
 
     void set_face_normal(const ray& r, const vec3& outward_normal)
     {
@@ -21,7 +23,7 @@ struct hit_record
 class hittable
 {
 public:
-    virtual bool hit(const ray& r, double t_min, double t_max, color& attenuation, hit_record& rec)=0;
+    virtual bool hit(const ray& r, double t_min, double t_max, hit_record& rec) const=0;
 };
 
 
