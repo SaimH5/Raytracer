@@ -5,6 +5,8 @@
 #include <cmath>
 #include <iostream>
 
+#include "utilities.h"
+
 class vec3
 {
 public:
@@ -25,8 +27,8 @@ public:
     double z() const { return e[2]; }
 
     // Indexing operators
-    double operator[](int idx) const { return e[idx]; }
-    double& operator[](int idx) { return e[idx]; }
+    inline double operator[](int idx) const { return e[idx]; }
+    inline double& operator[](int idx) { return e[idx]; }
 
     // Arithmetic operators
     vec3 operator-() const { return vec3(-e[0], -e[1], -e[2]); }
@@ -90,9 +92,21 @@ public:
         return std::sqrt(e[0] * e[0] + e[1] * e[1] + e[2] * e[2]);
     }
 
+    // Random vector functions
+
+    inline static vec3 random()
+    {
+        return vec3(random_double(), random_double(), random_double());
+    }
+
+    inline static vec3 random(double min, double max)
+    {
+        return vec3(random_double(min, max), random_double(min, max), random_double(min, max));
+    }
+
 private:
-    std::array<double, 3> e;
-    // double e[3];
+    // std::array<double, 3> e;
+    double e[3];
 };
 
 
@@ -204,6 +218,35 @@ inline vec3 cross(const vec3& v1, const vec3& v2)
 inline vec3 unit_vector(const vec3& v)
 {
     return v / v.length();
+}
+
+
+// Random vec3 functions
+
+vec3 random_in_unit_sphere()
+{
+    while(true)
+    {
+        vec3 r = vec3::random(-1, 1);
+        if(r.length_squared() > 1) continue;
+        return r;
+    }
+}
+
+vec3 random_unit_vector()
+{
+    return unit_vector(random_in_unit_sphere());
+}
+
+vec3 random_in_unit_hemisphere(const vec3& normal)
+{
+    vec3 in_unit_sphere = random_in_unit_sphere();
+    if(dot(in_unit_sphere, normal) > 0.0)
+    {
+        return in_unit_sphere;
+    }
+    
+    return -in_unit_sphere;
 }
 
 #endif
