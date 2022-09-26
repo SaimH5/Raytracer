@@ -82,7 +82,7 @@ public:
         thread_count = thread_count > 0 ? thread_count : 1;
         try
         {
-            for(unsigned int i = 0; i < thread_count; i++)
+            for(unsigned int i = 0; i < thread_count - 1; i++)
             {
                 m_threads.push_back(std::thread(&worker, this));
             }
@@ -106,7 +106,9 @@ public:
             }
         }
     }
-    
+
+    unsigned int thread_count() const { return m_threads.size(); }
+
     template<typename F, typename... Args>
     std::future<std::result_of_t<F(Args...)>> submit(F f, Args... arg)
     {

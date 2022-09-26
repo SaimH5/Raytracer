@@ -92,6 +92,12 @@ public:
         return std::sqrt(e[0] * e[0] + e[1] * e[1] + e[2] * e[2]);
     }
 
+    bool near_zero() const
+    {
+        const auto s = 1e-8;
+        return (fabs(e[0]) < s) && (fabs(e[1]) < 0) && (fabs(e[2]) < 0);
+    }
+
     // Random vector functions
 
     inline static vec3 random()
@@ -247,6 +253,15 @@ vec3 random_in_unit_hemisphere(const vec3& normal)
     }
     
     return -in_unit_sphere;
+}
+
+
+
+// Vector functions for materials
+
+vec3 reflect(const vec3& normal, const vec3& v)
+{
+    return v + 2 * dot(normal, -v) * normal;
 }
 
 #endif
