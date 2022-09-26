@@ -2,22 +2,37 @@
 #define _UTILITIES_h
 
 #include <random>
+#include "fastPRNG.h"
 
-inline double random_double()
+const double inf = std::numeric_limits<double>::infinity();
+
+// double random_double()
+// {
+//     static std::uniform_real_distribution<double> dist(0.0, 1.0);
+//     static std::mt19937 generator;
+//     return dist(generator);
+// }
+
+// double random_double(double start, double end)
+// {
+//     static std::uniform_real_distribution<double> dist(start, end);
+//     static std::mt19937 generator;
+//     return dist(generator);
+// }
+
+double random_double()
 {
-    static std::uniform_real_distribution<double> dist(0.0, 1.0);
-    static std::mt19937 generator;
-    return dist(generator);
+    static fastPRNG::fastXS64s fastR;
+    return fastR.xoshiro256p_UNI<double>();
 }
 
-inline double random_double(double start, double end)
+double random_double(double start, double end)
 {
-    static std::uniform_real_distribution<double> dist(start, end);
-    static std::mt19937 generator;
-    return dist(generator);
+    static fastPRNG::fastXS64s fastR;
+    return fastR.xoshiro256p_Range<double>(start, end);
 }
 
-inline int random_int(int start, int end)
+int random_int(int start, int end)
 {
     static std::uniform_int_distribution<int> dist(start, end);
     static std::mt19937 generator;
