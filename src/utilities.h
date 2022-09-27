@@ -39,4 +39,12 @@ int random_int(int start, int end)
     return dist(generator);
 }
 
+
+double clamp(double value, double min, double max)
+{
+    value = value < min ? min : value;
+    value = value > max ? max : value;
+    return value;
+}
+
 #endif
