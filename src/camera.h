@@ -8,15 +8,27 @@
 class camera
 {
 public:
-    camera(double ar, point3 org) : m_aspect_ratio(ar), m_origin(org) 
+    camera( point3 look_from,
+            point3 look_at,
+            vec3 vup,
+            double vfov,
+            double ar
+            ) : m_origin(look_from) 
     {
-        auto viewport_height = 2.0;
-        auto viewport_width = m_aspect_ratio * viewport_height;
-        auto focal_length = 1.0;
+        auto theta = degrees_to_radians(vfov);
+        auto h = tan(theta/2);
+        auto viewport_height = 2.0 * h;
+        auto viewport_width = ar * viewport_height;
 
-        m_horizontal = vec3(viewport_width, 0, 0);
-        m_vertical = vec3(0, viewport_height, 0);
-        m_lower_left_corner = m_origin - m_horizontal / 2 - m_vertical / 2 - vec3(0, 0, focal_length);
+        // auto focal_length = 1.0;
+
+        auto w = unit_vector(look_from - look_at);
+        auto u = unit_vector(cross(vup, w));
+        auto v = cross(w, u);
+
+        m_horizontal = viewport_width * u;
+        m_vertical = viewport_height * v;
+        m_lower_left_corner = m_origin - m_horizontal / 2 - m_vertical / 2 - w;
 
     }
 
@@ -26,7 +38,6 @@ public:
     }
 
 private:
-     double m_aspect_ratio;
      point3 m_origin;
      vec3 m_horizontal;
      vec3 m_vertical;
