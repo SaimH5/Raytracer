@@ -8,6 +8,10 @@ class material
 {
 public:
     virtual bool scatter(const ray& r_in, const hit_record& rec, ray& scattered, color& attenuation) const=0;
+    virtual color emitted() const
+    {
+        return color(0, 0, 0);
+    }
 };
 
 
@@ -55,4 +59,61 @@ bool metal::scatter(const ray& r_in, const hit_record& rec, ray& scattered, colo
     return dot(scattered.direction(), rec.normal) > 0;    
 }
 
+class dielectric : public material
+{
+public:
+    dielectric(double ir = 1) : m_refractive_index(ir) {}
+
+    virtual bool scatter(const ray& r_in, const hit_record& rec, ray& scattered, color& attenuation) const override;
+
+private:
+    double m_refractive_index;
+
+    static double reflectance(double cosine, double ref_idx)
+    {
+        auto r0 = (1 - ref_idx) / (1 + ref_idx);
+        r0 *= r0;
+        return r0 + (1-r0)*pow(1 - cosine, 5);
+    }
+};
+
+bool dielectric::scatter(const ray& r_in, const hit_record& rec, ray& scattered, color& attenuation) const
+{
+    attenuation = color(1, 1, 1);
+    double refraction_ratio = rec.front_face ? (1.0 / m_refractive_index) : m_refractive_index;
+    
+    auto unit_v = unit_vector(r_in.direction());
+    auto cos_theta = dot(-unit_v, rec.normal);
+    auto sin_theta = sqrt(1.0 - cos_theta*cos_theta);
+    bool cannot_refract = refraction_ratio * sin_theta > 1.0;
+
+    vec3 direction;
+    if(cannot_refract || reflectance(cos_theta, refraction_ratio) > random_double())
+    {
+        direction = reflect(rec.normal, r_in.direction());
+    }
+    else
+    {
+        direction = refract(rec.normal, r_in.direction(), refraction_ratio);
+    }
+
+    scattered = ray(rec.p, direction);
+    return true;    
+}
+
+class diffuse_light : public material
+{
+public:
+    diffuse_light(color a) : m_albedo(a) {}
+
+    virtual bool scatter(const ray& r_in, const hit_record& rec, ray& scattered, color& attenuation) const override
+    {
+        return false;
+    }
+
+    virtual color emitted() const override { return m_albedo; }
+
+private:
+    color m_albedo;
+};
 #endif

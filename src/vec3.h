@@ -264,4 +264,13 @@ vec3 reflect(const vec3& normal, const vec3& v)
     return v + 2 * dot(normal, -v) * normal;
 }
 
+vec3 refract(const vec3& normal, const vec3& v, double etai_over_etat)
+{
+    vec3 unit_v = unit_vector(v);
+    auto cos_theta = fmin(dot(-unit_v, normal), 1.0);
+
+    vec3 r_out_perp = etai_over_etat * (unit_v + cos_theta * normal);
+    vec3 r_out_parallel = sqrt(fabs(1 - r_out_perp.length_squared())) * - normal;
+    return r_out_perp + r_out_parallel;
+}
 #endif
