@@ -4,6 +4,7 @@
 #include "ray.h"
 #include "hittable.h"
 
+// Base material class with virtual scatte functions for non-emmisive surfaces and emitted function for emissive surfaces
 class material
 {
 public:
@@ -14,7 +15,7 @@ public:
     }
 };
 
-
+// Derived material class for diffuse/lambertian surfaces
 class lambertian : public material
 {
 public:
@@ -37,7 +38,7 @@ bool lambertian::scatter(const ray& r_in, const hit_record& rec, ray& scattered,
     return true;
 }
 
-
+// Derived material class for metal/reflective surfaces
 class metal : public material
 {
 public:
@@ -59,6 +60,7 @@ bool metal::scatter(const ray& r_in, const hit_record& rec, ray& scattered, colo
     return dot(scattered.direction(), rec.normal) > 0;    
 }
 
+// Derived material class for dielectric/transparent surfaces (e.g. glass)
 class dielectric : public material
 {
 public:
@@ -101,6 +103,7 @@ bool dielectric::scatter(const ray& r_in, const hit_record& rec, ray& scattered,
     return true;    
 }
 
+// Derived material class for emissive surfaces
 class diffuse_light : public material
 {
 public:

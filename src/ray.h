@@ -3,6 +3,7 @@
 
 #include "vec3.h"
 
+// Ray class that starts at an origin and has a direction
 class ray
 {
 public:

@@ -5,6 +5,7 @@
 #include "ray.h"
 #include "vec3.h"
 
+// Struct to hold details of individual ray-object intersections
 struct hit_record
 {
     double t;
@@ -20,6 +21,7 @@ struct hit_record
     }
 };
 
+// Abstract base class for objects that can be hit/intersected by a ray
 class hittable
 {
 public:

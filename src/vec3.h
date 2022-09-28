@@ -7,6 +7,8 @@
 
 #include "utilities.h"
 
+// Vector class for storing 3D points, vectors, and colors
+// plus implements basic vector operations
 class vec3
 {
 public:
@@ -14,7 +16,6 @@ public:
     vec3() : e{0, 0, 0} {}
     vec3(double x, double y, double z) : e{x, y, z} {}
 
-    // vec3(const vec3 other)=default;
     vec3(vec3& other)=default;
     vec3(const vec3& other)=default;
     vec3& operator=(const vec3& other)=default;
@@ -29,6 +30,7 @@ public:
     // Indexing operators
     inline double operator[](int idx) const { return e[idx]; }
     inline double& operator[](int idx) { return e[idx]; }
+
 
     // Arithmetic operators
     vec3 operator-() const { return vec3(-e[0], -e[1], -e[2]); }
@@ -81,7 +83,7 @@ public:
         return *this;
     }
 
-
+    // Vector convenience operations
     double length_squared() const
     {
         return e[0] * e[0] + e[1] * e[1] + e[2] * e[2];
@@ -98,8 +100,7 @@ public:
         return (fabs(e[0]) < s) && (fabs(e[1]) < 0) && (fabs(e[2]) < 0);
     }
 
-    // Random vector functions
-
+    // Random vector generation functions
     inline static vec3 random()
     {
         return vec3(random_double(), random_double(), random_double());
@@ -122,8 +123,8 @@ private:
 using point3 = vec3;
 using color = vec3;
 
-// Operator overloads
 
+// Operator overloads
 inline vec3 operator+(const vec3& v1, const vec3& v2)
 {
     return vec3(v1[0] + v2[0],
@@ -207,8 +208,8 @@ inline std::ostream& operator<<(std::ostream& out, const vec3& v)
     return out;
 }
 
-// Vector operations
 
+// Vector operations
 inline double dot(const vec3& v1, const vec3& v2)
 {
     return v1[0] * v2[0] + v1[1] * v2[1] + v1[2] * v2[2];
@@ -227,8 +228,9 @@ inline vec3 unit_vector(const vec3& v)
 }
 
 
-// Random vec3 functions
 
+// Random vector generation functions for computing scattering
+// of ray upon intersection with surfaces and for visual effects
 vec3 random_in_unit_sphere()
 {
     while(true)
@@ -265,8 +267,9 @@ vec3 random_in_unit_disk()
     }
 }
 
-// Vector functions for materials
 
+
+// Vector functions for computing ray reflection and refraction upon hitting materials
 vec3 reflect(const vec3& normal, const vec3& v)
 {
     return v + 2 * dot(normal, -v) * normal;

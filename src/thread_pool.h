@@ -9,6 +9,7 @@
 #include <thread>
 #include <tuple>
 
+// Wrapper class for callable objects
 class func_wrapper
 {
     struct base
@@ -51,6 +52,9 @@ public:
     void operator()() { heldFunc->call(); }
 };
 
+
+// Thread pool class that adds incoming tasks to a queue and assigns them
+// to available worker threads based on hardware support
 class thread_pool
 {
     std::atomic_bool done;
@@ -59,6 +63,10 @@ class thread_pool
     std::mutex m_mtx;
     std::condition_variable cv_wait_for_tasks;
 
+    // Function run by all worker threads
+    // Waits for tasks to be available using the condition variable
+    // Takes a task from the queue and calls it when notified
+    // Terminates when the destructor is called
     void worker()
     {
         while(!done)
@@ -76,6 +84,8 @@ class thread_pool
     }
 
 public:
+    // Constructor; Creates threads according to available cores/threads on the hardware
+    // Creates one less thread than the total available to allow main thread of the program to also do work
     thread_pool() : done(false) 
     {
         size_t thread_count = std::thread::hardware_concurrency();
@@ -109,6 +119,9 @@ public:
 
     unsigned int thread_count() const { return m_threads.size(); }
 
+    // Templated submit function that takes in arbitrary callable objects
+    // creates a packaged_task out of them and adds them to the main queue,
+    // then returns a future of the appropriate type
     template<typename F, typename... Args>
     std::future<std::result_of_t<F(Args...)>> submit(F f, Args... arg)
     {

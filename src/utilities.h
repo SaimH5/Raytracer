@@ -28,6 +28,8 @@ inline double degrees_to_radians(double degrees)
 //     return dist(generator);
 // }
 
+// Random Number Generators
+
 double random_double()
 {
     static fastPRNG::fastXS64s fastR;

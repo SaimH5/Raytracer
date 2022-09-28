@@ -4,6 +4,7 @@
 #include "hittable.h"
 #include "vec3.h"
 
+// Class for sphere primitives that can be intersected by a ray and rendered
 class sphere : public hittable
 {
 public:

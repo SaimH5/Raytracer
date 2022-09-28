@@ -5,6 +5,8 @@
 #include <memory>
 #include "hittable.h"
 
+// Derived hittable class that holds a list of hittable objects in an std::vector and 
+// for a given ray, figures out which, if any, of the stored objects are hit and which one is closest
 class hittable_list : public hittable
 {
 public:
