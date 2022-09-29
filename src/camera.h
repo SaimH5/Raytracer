@@ -1,8 +1,7 @@
 #ifndef _CAMERA_h
 #define _CAMERA_h
 
-#include "vec3.h"
-#include "ray.h"
+#include "utilities.h"
 
 // Camera class for handling the viewport and positioning of camera as well as visual effects like Depth of Field
 class camera
@@ -14,8 +13,10 @@ public:
             double vfov,
             double ar,
             double aperture, 
-            double focus_dist
-            ) : m_origin(look_from) 
+            double focus_dist,
+            double tm0 = 0.0,
+            double tm1 = 0.0
+            ) : m_origin(look_from), time0(tm0), time1(tm1)
     {
         // Adjusts viewport parameters based on supplied field of view value
         auto theta = degrees_to_radians(vfov);
@@ -44,7 +45,8 @@ public:
         vec3 offset = u * rd.x() + v * rd.y();
 
         return ray( m_origin + offset, 
-                    m_lower_left_corner + s * m_horizontal + t * m_vertical   - m_origin - offset);
+                    m_lower_left_corner + s * m_horizontal + t * m_vertical   - m_origin - offset,
+                    random_double(time0, time1));
     }
 
 private:
@@ -54,6 +56,7 @@ private:
      point3 m_lower_left_corner;
      vec3 u, v, w;
      double m_lens_radius;
+     double time0, time1;
 };
 
 #endif

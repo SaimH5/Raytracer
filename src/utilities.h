@@ -1,8 +1,14 @@
 #ifndef _UTILITIES_h
 #define _UTILITIES_h
 
+#include <cmath>
+#include <memory>
 #include <random>
 #include "fastPRNG.h"
+
+// Using's
+
+using std::make_shared;
 
 // Constants
 const double inf = std::numeric_limits<double>::infinity();
@@ -56,5 +62,11 @@ double clamp(double value, double min, double max)
     value = value > max ? max : value;
     return value;
 }
+
+
+// Common include's
+
+#include "ray.h"
+#include "vec3.h"
 
 #endif

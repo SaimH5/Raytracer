@@ -1,8 +1,7 @@
 #ifndef _VEC3_h
 #define _VEC3_h
 
-#include <array>
-#include <cmath>
+// #include <array>
 #include <iostream>
 
 #include "utilities.h"
@@ -122,6 +121,8 @@ private:
 
 using point3 = vec3;
 using color = vec3;
+
+
 
 
 // Operator overloads

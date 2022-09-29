@@ -32,7 +32,7 @@ bool lambertian::scatter(const ray& r_in, const hit_record& rec, ray& scattered,
     vec3 scatter_direction = rec.normal + random_unit_vector();
     if(scatter_direction.near_zero()) scatter_direction = rec.normal;
 
-    scattered = ray(rec.p, scatter_direction);
+    scattered = ray(rec.p, scatter_direction, r_in.time());
     attenuation = m_albedo;
 
     return true;
@@ -55,7 +55,7 @@ bool metal::scatter(const ray& r_in, const hit_record& rec, ray& scattered, colo
 {
     attenuation = m_albedo;
     vec3 scatter_direction = reflect(rec.normal, r_in.direction());
-    scattered = ray(rec.p, scatter_direction + m_fuzziness * random_in_unit_sphere());
+    scattered = ray(rec.p, scatter_direction + m_fuzziness * random_in_unit_sphere(), r_in.time());
 
     return dot(scattered.direction(), rec.normal) > 0;    
 }
@@ -99,7 +99,7 @@ bool dielectric::scatter(const ray& r_in, const hit_record& rec, ray& scattered,
         direction = refract(rec.normal, r_in.direction(), refraction_ratio);
     }
 
-    scattered = ray(rec.p, direction);
+    scattered = ray(rec.p, direction, r_in.time());
     return true;    
 }
 
