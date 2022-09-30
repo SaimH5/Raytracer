@@ -14,6 +14,7 @@
 #include "src/utilities.h"
 #include "src/material.h"
 #include "src/moving_sphere.h"
+#include "src/bvh.h"
 
 using namespace std::chrono;
 
@@ -46,7 +47,7 @@ struct render_info
 
 // Core function for computing colors of pixels by shooting rays at objects in the scene
 // The function is recursive and calculates up to {max_depth} bounces before terminating
-color ray_color(const ray& r, const hittable_list& h, int max_depth)
+color ray_color(const ray& r, const bvh_node& h, int max_depth)
 {
     if(max_depth <= 0)
     {
@@ -64,14 +65,14 @@ color ray_color(const ray& r, const hittable_list& h, int max_depth)
     }
 
     // For black background
-    // return color(0, 0, 0);
+    return color(0, 0, 0);
 
     // For sky background 
-    // /*
+    /*
     auto unit_direction = unit_vector(r.direction());
     auto t = 0.5 * (unit_direction.y() + 1);
     return (1-t) * color(1, 1, 1) + t * color(0.5, 0.7, 1);
-    // */
+    */
 }
 
 // Utility function for converting color values to a string that holds the RGB values for a pixel
@@ -90,7 +91,7 @@ std::string write_color(color col)
 
 
 // Main render loop function, renders up to {no_samples} samples of the entire image and adds the result of pixelColors
-void render_lines(std::vector<color>& pixelColors, int no_samples, render_info& rend_inf, const hittable_list& h)
+void render_lines(std::vector<color>& pixelColors, int no_samples, render_info& rend_inf, const bvh_node& h)
 {
     for(int samples = 0; samples < no_samples; samples++)
     {
@@ -125,15 +126,15 @@ int main()
     const double aspect_ratio = 16.0 / 9.0;
     const int image_width = 400;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
-    const int samples_per_pixel = 100;  
+    const int samples_per_pixel = 500;  
     const int max_depth = 50;
 
     std::vector<color> pixelColors(image_width * image_height);
 
     // Camera setup
-    // point3 cam_lookfrom(13, 2, 3);  
     point3 cam_lookfrom(13, 2, 3);  
-    point3 cam_lookat(0, 0, -1);
+    // point3 cam_lookfrom(0, 0, 1);  
+    point3 cam_lookat(0, 0, 0);
     double aperture = 0.1;
     double dist_to_focus = 10.0;    
     camera cam(cam_lookfrom, cam_lookat, vec3(0, 1, 0), 20, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0);
@@ -142,12 +143,13 @@ int main()
     render_info rend_inf(image_width, image_height, samples_per_pixel, samples_per_pixel, max_depth, cam);
 
     // Scene setup
-    hittable_list scene = random_scene();
-    // scene.add(make_shared<sphere>(point3(-1, 0, -1), 0.5, make_shared<lambertian>(color(1, 0, 0))));
-    // scene.add(std::make_shared<sphere>(point3(-1, 0, -1), 0.5, std::make_shared<metal>(color(0.4, 0.4, 0.4), 0.1)));
-    // scene.add(std::make_shared<sphere>(point3(1, 0, -1), 0.5, std::make_shared<dielectric>(1.4)));
-    // // scene.add(std::make_shared<sphere>(point3(0, 15, 0), 10, std::make_shared<diffuse_light>(color(1, 1, 1))));
-    // scene.add(std::make_shared<sphere>(point3(0, -1000.5, -1), 1000, std::make_shared<lambertian>(color(0, 1, 0))));
+    hittable_list scene_list = random_scene();
+    // scene_list.add(make_shared<sphere>(point3(-1, 0, -1), 0.5, make_shared<lambertian>(color(1, 0, 0))));
+    // scene_list.add(std::make_shared<sphere>(point3(0, 0, -1), 0.5, std::make_shared<metal>(color(0.4, 0.4, 0.4), 0.1)));
+    // scene_list.add(std::make_shared<sphere>(point3(1, 0, -1), 0.5, std::make_shared<dielectric>(1.4)));
+    // scene_list.add(make_shared<sphere>(point3(0, -1000.5, -1), 1000, make_shared<lambertian>(color(0, 1, 0))));
+    scene_list.add(std::make_shared<sphere>(point3(0, 15, 0), 10, std::make_shared<diffuse_light>(color(4, 4, 4))));
+    bvh_node scene(scene_list, 0.0, 1.0);
 
     // for( int i = 0; i < 20; i++)
     // {

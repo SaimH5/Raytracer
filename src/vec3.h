@@ -14,6 +14,7 @@ public:
     // Constructors
     vec3() : e{0, 0, 0} {}
     vec3(double x, double y, double z) : e{x, y, z} {}
+    vec3(double x) : e{x, x, x} {}
 
     vec3(vec3& other)=default;
     vec3(const vec3& other)=default;

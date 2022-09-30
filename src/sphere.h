@@ -39,6 +39,11 @@ public:
         return true;
     }
 
+    virtual bool bounding_box(double time0, double time1, aabb& output_box) const override
+    {
+        output_box = aabb(m_center - vec3(m_radius), m_center + vec3(m_radius));
+        return true;
+    }
 
 private:
     point3 m_center;

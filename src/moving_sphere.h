@@ -42,6 +42,15 @@ public:
         return true;
     }
 
+    virtual bool bounding_box(double tm0, double tm1, aabb& output_box) const override
+    {
+        aabb box0(center(tm0) - vec3(m_radius), center(tm0) + vec3(m_radius));
+        aabb box1(center(tm1) - vec3(m_radius), center(tm1) + vec3(m_radius));
+
+        output_box = surrounding_box(box0, box1);
+        return true;
+    }
+
     point3 center(double time) const
     {
         return m_center0 + ((time - time0) / (time1 - time0)) * (m_center1 - m_center0);
