@@ -65,14 +65,14 @@ color ray_color(const ray& r, const bvh_node& h, int max_depth)
     }
 
     // For black background
-    return color(0, 0, 0);
+    // return color(0, 0, 0);
 
     // For sky background 
-    /*
+    // /*
     auto unit_direction = unit_vector(r.direction());
     auto t = 0.5 * (unit_direction.y() + 1);
     return (1-t) * color(1, 1, 1) + t * color(0.5, 0.7, 1);
-    */
+    // */
 }
 
 // Utility function for converting color values to a string that holds the RGB values for a pixel
@@ -124,9 +124,9 @@ int main()
 
     // Image dimensions
     const double aspect_ratio = 16.0 / 9.0;
-    const int image_width = 400;
+    const int image_width = 800;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
-    const int samples_per_pixel = 500;  
+    const int samples_per_pixel = 100;  
     const int max_depth = 50;
 
     std::vector<color> pixelColors(image_width * image_height);
@@ -148,7 +148,7 @@ int main()
     // scene_list.add(std::make_shared<sphere>(point3(0, 0, -1), 0.5, std::make_shared<metal>(color(0.4, 0.4, 0.4), 0.1)));
     // scene_list.add(std::make_shared<sphere>(point3(1, 0, -1), 0.5, std::make_shared<dielectric>(1.4)));
     // scene_list.add(make_shared<sphere>(point3(0, -1000.5, -1), 1000, make_shared<lambertian>(color(0, 1, 0))));
-    scene_list.add(std::make_shared<sphere>(point3(0, 15, 0), 10, std::make_shared<diffuse_light>(color(4, 4, 4))));
+    // scene_list.add(std::make_shared<sphere>(point3(0, 15, 0), 10, std::make_shared<diffuse_light>(color(4, 4, 4))));
     bvh_node scene(scene_list, 0.0, 1.0);
 
     // for( int i = 0; i < 20; i++)
@@ -218,7 +218,7 @@ int main()
 hittable_list random_scene() 
 {
     hittable_list world;
-    auto ground_material = make_shared<lambertian>(color(0.5, 0.5, 0.5));
+    auto ground_material = make_shared<lambertian>(make_shared<checker_texture>(color(1, 1, 1), color(0.5, 0.5, 0.5)));
     world.add(make_shared<sphere>(point3(0,-1000,0), 1000, ground_material));
 
     for (int a = -11; a < 11; a++) {

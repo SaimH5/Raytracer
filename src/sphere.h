@@ -2,7 +2,7 @@
 #define _SPHERE_h
 
 #include "hittable.h"
-#include "vec3.h"
+#include "utilities.h"
 
 // Class for sphere primitives that can be intersected by a ray and rendered
 class sphere : public hittable
@@ -35,6 +35,7 @@ public:
         rec.p = r.at(rec.t);
         vec3 outward_normal = (rec.p - m_center) / m_radius;
         rec.set_face_normal(r, outward_normal);
+        get_sphere_uv(rec.p, rec.u, rec.v);
         rec.mat_ptr = m_mat;
         return true;
     }
@@ -46,6 +47,16 @@ public:
     }
 
 private:
+    static void get_sphere_uv(const point3& p, double& u, double& v)
+    {
+        auto theta = acos(-p.y());
+        auto phi = atan2(-p.x(), p.x()) + pi;
+
+        u = phi / (2*pi);
+        v = theta / pi;
+    }
+
+
     point3 m_center;
     double m_radius;
     std::shared_ptr<material> m_mat;

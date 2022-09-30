@@ -8,9 +8,11 @@
 // Struct to hold details of individual ray-object intersections
 struct hit_record
 {
-    double t;
     point3 p;
     vec3 normal;
+    double t;
+    double u;
+    double v;
     bool front_face;
     std::shared_ptr<class material> mat_ptr;
 

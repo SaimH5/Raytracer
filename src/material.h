@@ -1,8 +1,9 @@
 #ifndef _MATERIAL_h
 #define _MATERIAL_h
 
-#include "ray.h"
+#include "utilities.h"
 #include "hittable.h"
+#include "texture.h"
 
 // Base material class with virtual scatte functions for non-emmisive surfaces and emitted function for emissive surfaces
 class material
@@ -19,12 +20,13 @@ public:
 class lambertian : public material
 {
 public:
-    lambertian(color a) : m_albedo(a) {}
+    lambertian(color a) : m_albedo(make_shared<solid_color>(a)) {}
+    lambertian(shared_ptr<texture> a) : m_albedo(a) {}
 
     virtual bool scatter(const ray& r_in, const hit_record& rec, ray& scattered, color& attenuation) const override;
 
 private:
-    color m_albedo;
+    shared_ptr<texture> m_albedo;
 };
 
 bool lambertian::scatter(const ray& r_in, const hit_record& rec, ray& scattered, color& attenuation) const
@@ -33,7 +35,7 @@ bool lambertian::scatter(const ray& r_in, const hit_record& rec, ray& scattered,
     if(scatter_direction.near_zero()) scatter_direction = rec.normal;
 
     scattered = ray(rec.p, scatter_direction, r_in.time());
-    attenuation = m_albedo;
+    attenuation = m_albedo->value(rec.u, rec.v, rec.p);
 
     return true;
 }
