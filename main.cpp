@@ -115,7 +115,7 @@ void render_lines(std::vector<color>& pixelColors, int no_samples, render_info& 
 
 // Forward declarations of scene functions
 hittable_list random_scene();
-
+hittable_list two_perlin_spheres();
 
 // Main entry function
 int main()
@@ -126,7 +126,7 @@ int main()
     const double aspect_ratio = 16.0 / 9.0;
     const int image_width = 800;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
-    const int samples_per_pixel = 100;  
+    const int samples_per_pixel = 50;  
     const int max_depth = 50;
 
     std::vector<color> pixelColors(image_width * image_height);
@@ -143,7 +143,8 @@ int main()
     render_info rend_inf(image_width, image_height, samples_per_pixel, samples_per_pixel, max_depth, cam);
 
     // Scene setup
-    hittable_list scene_list = random_scene();
+    // hittable_list scene_list = random_scene();
+    hittable_list scene_list = two_perlin_spheres();
     // scene_list.add(make_shared<sphere>(point3(-1, 0, -1), 0.5, make_shared<lambertian>(color(1, 0, 0))));
     // scene_list.add(std::make_shared<sphere>(point3(0, 0, -1), 0.5, std::make_shared<metal>(color(0.4, 0.4, 0.4), 0.1)));
     // scene_list.add(std::make_shared<sphere>(point3(1, 0, -1), 0.5, std::make_shared<dielectric>(1.4)));
@@ -256,4 +257,15 @@ hittable_list random_scene()
     auto material3 = make_shared<metal>(color(0.7, 0.6, 0.5), 0.0);
     world.add(make_shared<sphere>(point3(4, 1, 0), 1.0, material3));
     return world;
+}
+
+hittable_list two_perlin_spheres()
+{
+    hittable_list objects;
+
+    auto pertext = make_shared<noise_texture>(4);
+    objects.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(pertext)));
+    objects.add(make_shared<sphere>(point3(0, 2, 0), 2, make_shared<lambertian>(pertext)));
+
+    return objects;
 }
