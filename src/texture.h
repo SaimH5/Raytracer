@@ -1,6 +1,9 @@
 #ifndef _TEXTURE_h
 #define _TEXTURE_h
 
+#define STB_IMAGE_IMPLEMENTATION
+#include "stb_image.h"
+
 #include "utilities.h"
 #include "perlin.h"
 
@@ -75,4 +78,63 @@ private:
     double scale;
 };
 
+
+class image_texture : public texture
+{
+public:
+    const static int bytes_per_pixel = 3;
+
+    image_texture() : m_img(nullptr), m_width(0), m_height(0), m_bytes_per_scanline(0) {}
+
+    image_texture(const char* filename)
+    {
+        auto components_per_pixel = bytes_per_pixel;
+
+        m_img = stbi_load(filename, &m_width, &m_height, &components_per_pixel, components_per_pixel);
+
+        if(!m_img)
+        {
+            std::string error = "ERROR: Could not load " + static_cast<std::string>(filename) + ".\n";
+            std::cerr << error;
+            m_width = m_height = 0;
+        }
+
+        m_bytes_per_scanline = bytes_per_pixel * m_width;
+    }
+
+    ~image_texture()
+    {
+        delete m_img;
+    }
+
+    virtual color value(double u, double v, const point3& p) const override
+    {
+        if(m_img == nullptr)
+        {   
+            return color(0, 1, 1);
+        }
+
+        u = clamp(u, 0.0, 1.0);
+        // v = clamp(v, 0.0, 1.0);
+        v = 1.0 - clamp(v, 0.0, 1.0);
+
+        auto i = static_cast<int>(u * m_width);
+        auto j = static_cast<int>(v * m_height);
+
+        if(i >= m_width) i = m_width-1;
+        if(j >= m_height) j = m_height-1;
+
+        const auto color_scale = 1.0 / 255.0;
+        auto pixel = m_img + j*m_bytes_per_scanline + i * bytes_per_pixel;
+
+        return color(color_scale*pixel[0],
+                     color_scale*pixel[1],
+                     color_scale*pixel[2]);
+    }
+
+private:
+    unsigned char * m_img;
+    int m_width, m_height;
+    int m_bytes_per_scanline;
+};
 #endif
