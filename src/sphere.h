@@ -14,17 +14,17 @@ public:
     {
         auto ray_org_to_center = r.origin() - m_center;
         auto a = r.direction().length_squared();
-        auto b = 2 * dot(r.direction(), ray_org_to_center);
+        auto half_b = dot(r.direction(), ray_org_to_center);
         auto c = ray_org_to_center.length_squared() - m_radius * m_radius;
 
-        auto discriminant = b * b - 4 * a * c;
+        auto discriminant = half_b * half_b - a * c;
         if(discriminant < 0) return false;
 
         auto sqrt_disc = std::sqrt(discriminant);
-        auto root = (-b - sqrt_disc) / (2*a);
+        auto root = (-half_b - sqrt_disc) / a;
         if(root < t_min || root > t_max) 
         {
-            root = (-b + sqrt_disc) / (2*a);
+            root = (-half_b + sqrt_disc) / a;
             if(root < t_min || root > t_max) 
             {
                 return false;

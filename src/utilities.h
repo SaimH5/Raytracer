@@ -12,7 +12,7 @@ using std::shared_ptr;
 using std::make_shared;
 
 // Constants
-const double inf = std::numeric_limits<double>::infinity();
+const double infinity = std::numeric_limits<double>::infinity();
 const double pi = 3.1415926535897932385;
 
 // Utility Functions
@@ -39,13 +39,13 @@ inline double degrees_to_radians(double degrees)
 
 double random_double()
 {
-    static fastPRNG::fastXS64s fastR;
+    static fastPRNG::fastXS64 fastR(42);
     return fastR.xoshiro256p_UNI<double>();
 }
 
 double random_double(double start, double end)
 {
-    static fastPRNG::fastXS64s fastR;
+    static fastPRNG::fastXS64 fastR(42);
     return fastR.xoshiro256p_Range<double>(start, end);
 }
 
