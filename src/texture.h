@@ -1,9 +1,7 @@
 #ifndef _TEXTURE_h
 #define _TEXTURE_h
 
-#define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-
 #include "utilities.h"
 #include "perlin.h"
 

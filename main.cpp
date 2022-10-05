@@ -16,6 +16,9 @@
 #include "src/moving_sphere.h"
 #include "src/bvh.h"
 #include "src/aarect.h"
+#include "src/box.h"
+#include "src/constant_medium.h"
+#include "src/stb_image_write.h"
 
 using namespace std::chrono;
 
@@ -55,7 +58,7 @@ color ray_color(const ray& r, const bvh_node& h, int max_depth)
         return color(0, 0, 0);
     }
     hit_record rec;
-    if(h.hit(r, 0.001, inf, rec)) 
+    if(h.hit(r, 0.001, infinity, rec)) 
     {
         ray scattered;
         color attenuation;
@@ -113,12 +116,15 @@ void render_lines(std::vector<color>& pixelColors, int no_samples, render_info& 
     }
 }
 
+void output_ppm(std::vector<color>& pixelColors, double scale, int img_width, int img_height);
+void output_jpg(std::vector<color>& pixelColors, double scale, int img_width, int img_height);
 
 // Forward declarations of scene functions
 hittable_list random_scene();
 hittable_list two_perlin_spheres();
 hittable_list two_spheres();
 hittable_list cornell_box();
+hittable_list final_scene();
 
 // Main entry function
 int main()
@@ -127,9 +133,9 @@ int main()
 
     // Image dimensions
     const double aspect_ratio = 1.0;
-    const int image_width = 600;
+    const int image_width = 800;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
-    const int samples_per_pixel = 500;  
+    const int samples_per_pixel = 1000;  
     const int max_depth = 50;
 
     std::vector<color> pixelColors(image_width * image_height);
@@ -142,25 +148,13 @@ int main()
     double dist_to_focus = 10.0;    
     camera cam(cam_lookfrom, cam_lookat, vec3(0, 1, 0), 40, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0);
 
-    // int scanline_count = image_height;
     render_info rend_inf(image_width, image_height, samples_per_pixel, samples_per_pixel, max_depth, cam);
 
     // Scene setup
     // hittable_list scene_list = random_scene();
-    hittable_list scene_list = cornell_box();
-    // scene_list.add(make_shared<sphere>(point3(-1, 0, -1), 0.5, make_shared<lambertian>(color(1, 0, 0))));
-    // scene_list.add(std::make_shared<sphere>(point3(0, 0, -1), 0.5, std::make_shared<metal>(color(0.4, 0.4, 0.4), 0.1)));
-    // scene_list.add(std::make_shared<sphere>(point3(1, 0, -1), 0.5, std::make_shared<dielectric>(1.4)));
-    // scene_list.add(make_shared<sphere>(point3(0, -1000.5, -1), 1000, make_shared<lambertian>(color(0, 1, 0))));
-    // scene_list.add(std::make_shared<sphere>(point3(0, 15, 0), 10, std::make_shared<diffuse_light>(color(4, 4, 4))));
+    // hittable_list scene_list = cornell_box();
+    hittable_list scene_list = final_scene();
     bvh_node scene(scene_list, 0.0, 1.0);
-
-    // for( int i = 0; i < 20; i++)
-    // {
-    //     color c(random_double(), random_double(), random_double());
-    //     scene.add(std::make_shared<sphere>(point3(random_double(-5, 5), random_double(0, 2), random_double(0, 2)), 0.2, std::make_shared<lambertian>(c)));
-    // }
-
 
     // Render loop
     const int thread_count = pool.thread_count();
@@ -192,28 +186,61 @@ int main()
     std::cerr << "\nTime taken: " << duration_cast<milliseconds>(t2-t1).count();
     std::cerr << "\nDone!";
     std::cerr << "\nWriting to file.";
-
-    // PPM file data
-    std::ofstream outputImage("output.ppm", std::ios::trunc);
-    outputImage << "P3\n" << image_width << " " << image_height << "\n255\n";
-    std::string outputImageString;
+    
 
     // Scales color values stored in pixelColors by the sampling rate,
     // then concatenates it to a single output string
     auto scale = 1.0 / samples_per_pixel;
+
+    
+
+    // The final output string with all the pixel RGB values
+    // is written to the output file in one go
+    // output_ppm(pixelColors, scale, image_width, image_height);
+    output_jpg(pixelColors, scale, image_width, image_height);
+    
+
+    return 0;
+}
+
+
+void output_ppm(std::vector<color>& pixelColors, double scale, int img_width, int img_height)
+{
+    // PPM file data
+    std::ofstream outputImage("output.ppm", std::ios::trunc);
+    outputImage << "P3\n" << img_width << " " << img_height << "\n255\n";
+
+    std::string outputImageString;
     for(auto& px_color : pixelColors)
     {
         px_color *= scale;
         outputImageString += write_color(px_color);
     }
 
-    // The final output string with all the pixel RGB values
-    // is written to the output file in one go
     outputImage << outputImageString;
     outputImage.close();
+}
 
+void output_jpg(std::vector<color>& pixelColors, double scale, int img_width, int img_height)
+{
+    unsigned char* data = new unsigned char[img_width*img_height*3];
+    int ix = 0;
+    for(auto& col : pixelColors)
+    {
+        col *= scale;
+        col[0] = sqrt(col[0]);
+        col[1] = sqrt(col[1]);
+        col[2] = sqrt(col[2]);
 
-    return 0;
+        data[ix++] = static_cast<int>(255 * clamp(col[0], 0, 1));
+        data[ix++] = static_cast<int>(255 * clamp(col[1], 0, 1));
+        data[ix++] = static_cast<int>(255 * clamp(col[2], 0, 1));
+    }
+
+    if(!stbi_write_jpg("output.jpg", img_width, img_height, 3, data, 90))
+    {
+        std::cerr << "Failed to write image to file.";
+    }
 }
 
 
@@ -291,13 +318,82 @@ hittable_list cornell_box()
     auto red = make_shared<lambertian>(color(.65, .05, .05));
     auto white = make_shared<lambertian>(color(.73, .73, .73));
     auto green = make_shared<lambertian>(color(.12, .45, .15));
-    auto light = make_shared<diffuse_light>(color(15, 15, 15));
+    auto light = make_shared<diffuse_light>(color(7, 7, 7));
 
     objects.add(make_shared<yz_rect>(0, 555, 0, 555, 555, green));
     objects.add(make_shared<yz_rect>(0, 555, 0, 555, 0, red));
-    objects.add(make_shared<xz_rect>(213, 343, 227, 332, 554, light));
+    objects.add(make_shared<xz_rect>(113, 443, 127, 432, 554, light));
     objects.add(make_shared<xz_rect>(0, 555, 0, 555, 0, white));
     objects.add(make_shared<xz_rect>(0, 555, 0, 555, 555, white));
     objects.add(make_shared<xy_rect>(0, 555, 0, 555, 555, white));
+
+    shared_ptr<hittable> box1 = make_shared<box>(point3(0, 0, 0), point3(165, 330, 165), white);
+    box1 = make_shared<rotate_y>(box1, 15);
+    box1 = make_shared<translate>(box1, vec3(265, 0, 295)); 
+
+    shared_ptr<hittable> box2 = make_shared<box>(point3(0, 0, 0), point3(165, 165, 165), white);
+    box2 = make_shared<rotate_y>(box2, -18);
+    box2 = make_shared<translate>(box2, vec3(130, 0, 65)); 
+
+    objects.add(box1);
+    objects.add(box2);
+    // objects.add(make_shared<constant_medium>(box1, 0.01, color(0, 0, 0)));
+    // objects.add(make_shared<constant_medium>(box2, 0.01, color(0, 0, 0)));
+
+    return objects;
+}
+
+hittable_list final_scene() 
+{
+    hittable_list boxes1;
+    auto ground = make_shared<lambertian>(color(0.48, 0.83, 0.53));
+    const int boxes_per_side = 20;
+    for (int i = 0; i < boxes_per_side; i++) {
+        for (int j = 0; j < boxes_per_side; j++) {
+            auto w = 100.0;
+            auto x0 = -1000.0 + i*w;
+            auto z0 = -1000.0 + j*w;
+            auto y0 = 0.0;
+            auto x1 = x0 + w;
+            auto y1 = random_double(1,101);
+            auto z1 = z0 + w;
+            boxes1.add(make_shared<box>(point3(x0,y0,z0), point3(x1,y1,z1), ground));
+        }
+    }
+    hittable_list objects;
+    objects.add(make_shared<bvh_node>(boxes1, 0, 1));
+    auto light = make_shared<diffuse_light>(color(7, 7, 7));
+    objects.add(make_shared<xz_rect>(123, 423, 147, 412, 554, light));
+    auto center1 = point3(400, 400, 200);
+    auto center2 = center1 + vec3(30,0,0);
+    auto moving_sphere_material = make_shared<lambertian>(color(0.7, 0.3, 0.1));
+
+    objects.add(make_shared<moving_sphere>(center1, center2, 0, 1, 50, moving_sphere_material));
+    objects.add(make_shared<sphere>(point3(260, 150, 45), 50, make_shared<dielectric>(1.5)));
+    objects.add(make_shared<sphere>(
+    point3(0, 150, 145), 50, make_shared<metal>(color(0.8, 0.8, 0.9), 1.0)
+    ));
+    auto boundary = make_shared<sphere>(point3(360,150,145), 70, make_shared<dielectric>(1.5));
+    objects.add(boundary);
+    objects.add(make_shared<constant_medium>(boundary, 0.2, color(0.2, 0.4, 0.9)));
+    boundary = make_shared<sphere>(point3(0, 0, 0), 5000, make_shared<dielectric>(1.5));
+    objects.add(make_shared<constant_medium>(boundary, .0001, color(1,1,1)));
+    auto emat = make_shared<lambertian>(make_shared<image_texture>("texture images/earthmap.jpg"));
+    objects.add(make_shared<sphere>(point3(400,200,400), 100, emat));
+    auto pertext = make_shared<noise_texture>(0.1);
+    objects.add(make_shared<sphere>(point3(220,280,300), 80, make_shared<lambertian>(pertext)));
+    hittable_list boxes2;
+    auto white = make_shared<lambertian>(color(.73, .73, .73));
+    int ns = 1000;
+    for (int j = 0; j < ns; j++) 
+    {
+        boxes2.add(make_shared<sphere>(point3::random(0,165), 10, white));
+    }
+    objects.add(make_shared<translate>(
+    make_shared<rotate_y>(
+    make_shared<bvh_node>(boxes2, 0.0, 1.0), 15),
+    vec3(-100,270,395)
+    )   
+    );
     return objects;
 }
