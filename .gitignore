@@ -2,3 +2,14 @@
 .vscode/tasks.json
 build/main.exe
 build/output.ppm
+output.ppm
+texture images/94443706_p1.jpg
+texture images/EsktTFEVcAAVqyI.jpg
+texture images/unknown.png
+output_images/1000SDiffuseBalls.ppm
+output_images/Book1FinalImage.ppm
+output_images/CornellBoxWithBoxes.ppm
+output_images/CornellBoxWithInstancedBoxes.ppm
+output_images/CornellBoxWithVolumes.ppm
+output_images/Final_Image.jpg
+output_images/Final_Image.ppm
