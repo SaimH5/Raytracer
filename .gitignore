@@ -13,4 +13,3 @@ output_images/CornellBoxWithInstancedBoxes.ppm
 output_images/CornellBoxWithVolumes.ppm
 output_images/Final_Image.jpg
 output_images/Final_Image.ppm
-main.cpp
