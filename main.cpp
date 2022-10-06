@@ -69,14 +69,14 @@ color ray_color(const ray& r, const bvh_node& h, int max_depth)
     }
 
     // For black background
-    return color(0, 0, 0);
+    // return color(0, 0, 0);
 
     // For sky background 
-    /*
+    // /*
     auto unit_direction = unit_vector(r.direction());
     auto t = 0.5 * (unit_direction.y() + 1);
     return (1-t) * color(1, 1, 1) + t * color(0.5, 0.7, 1);
-    */
+    // */
 }
 
 // Utility function for converting color values to a string that holds the RGB values for a pixel
@@ -132,7 +132,7 @@ int main()
     thread_pool pool;
 
     // Image dimensions
-    const double aspect_ratio = 1.0;
+    const double aspect_ratio = 16.0 / 9.0;
     const int image_width = 800;
     const int image_height = static_cast<int>(image_width / aspect_ratio);
     const int samples_per_pixel = 1000;  
@@ -141,9 +141,10 @@ int main()
     std::vector<color> pixelColors(image_width * image_height);
 
     // Camera setup
-    // point3 cam_lookfrom(0, 3, 5);  
-    point3 cam_lookfrom(278, 278, -800);  
-    point3 cam_lookat(278, 278, 0);
+    point3 cam_lookfrom(5, 6, 7);  
+    point3 cam_lookat(0, 1, 0);
+    // point3 cam_lookfrom(278, 278, -800);  
+    // point3 cam_lookat(278, 278, 0);
     double aperture = 0;
     double dist_to_focus = 10.0;    
     camera cam(cam_lookfrom, cam_lookat, vec3(0, 1, 0), 40, aspect_ratio, aperture, dist_to_focus, 0.0, 1.0);
@@ -153,7 +154,8 @@ int main()
     // Scene setup
     // hittable_list scene_list = random_scene();
     // hittable_list scene_list = cornell_box();
-    hittable_list scene_list = final_scene();
+    // hittable_list scene_list = final_scene();
+    hittable_list scene_list = two_perlin_spheres();
     bvh_node scene(scene_list, 0.0, 1.0);
 
     // Render loop
@@ -294,9 +296,8 @@ hittable_list two_perlin_spheres()
     hittable_list objects;
 
     auto pertext = make_shared<noise_texture>(4);
-    auto imgtext = make_shared<image_texture>("texture images/earthmap.jpg");
     objects.add(make_shared<sphere>(point3(0, -1000, 0), 1000, make_shared<lambertian>(pertext)));
-    objects.add(make_shared<sphere>(point3(0, 2, 0), 2, make_shared<lambertian>(imgtext)));
+    objects.add(make_shared<sphere>(point3(0, 2, 0), 2, make_shared<lambertian>(pertext)));
 
     return objects;
 }
